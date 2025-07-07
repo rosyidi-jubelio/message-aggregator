@@ -8,6 +8,6 @@ const main = async () => {
 };
 
 main().catch((err) => {
-  console.error(`Fatal error: ${err}`);
+  console.error(`Fatal error: ${err}, ${err.stack}`);
   process.exit(1);
 });

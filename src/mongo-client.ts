@@ -11,6 +11,10 @@ export async function mongoClient() {
   await client.openConnection({
     connectionString: config.ORDER_MESSAGE_MONGO_URI,
   });
+  if (!client.connection) {
+    throw new Error("Failed to connect to MongoDB");
+  }
+  console.info("Connected to MongoDB successfully");
   return client;
 }
 

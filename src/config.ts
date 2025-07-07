@@ -9,7 +9,7 @@ const config = {
     process.env.ORDER_MESSAGE_MONGO_URI ||
     "mongodb://admin:admin123@localhost:27017/",
   ORDER_MESSAGE_MONGO_DB_NAME:
-    process.env.ORDER_MESSAGE_MONGO_DB_NAME || "order_message",
+    process.env.ORDER_MESSAGE_MONGO_DB_NAME || "messages",
 
   RMQ_HOST: process.env.RMQ_HOST,
   RMQ_HOST_CLUSTER: process.env.RMQ_HOST_CLUSTER || process.env.RMQ_HOST,
