@@ -9,7 +9,7 @@ export async function mongoClient() {
   }
 
   await client.openConnection({
-    connectionString: config.ORDER_MESSAGE_MONGO_URI,
+    connectionString: config.ORDER_QUEUE_MONGO_DB_URI,
   });
   if (!client.connection) {
     throw new Error("Failed to connect to MongoDB");

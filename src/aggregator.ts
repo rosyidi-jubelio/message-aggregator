@@ -16,27 +16,10 @@ export const logger = Logger.createLogger(
 
 export const processMessages = async () => {
   const client = await mongoClient();
-  const db = client.db(config.ORDER_MESSAGE_MONGO_DB_NAME);
-  const orderMsgCollection = db.collection("order_messages");
+  const db = client.db(config.ORDER_QUEUE_MONGO_DB_NAME);
+  const orderMsgCollection = db.collection(config.ORDER_QUEUE_COLLECTION_NAME);
 
-  const messages: OrderMessage[] = await orderMsgCollection
-    .aggregate([
-      {
-        $group: {
-          _id: { store_id: "$store_id", channel_id: "$channel_id" },
-          ref_nos: { $addToSet: "$ref_no" },
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          store_id: "$_id.store_id",
-          channel_id: "$_id.channel_id",
-          ref_nos: 1,
-        },
-      },
-    ])
-    .toArray();
+  const messages: OrderMessage[] = await orderMsgCollection.find({}).toArray();
 
   console.log(`got ${messages.length} stores of messages to process.`);
 
@@ -59,11 +42,19 @@ export const processMessages = async () => {
             };
 
             // await publishToRMQ(aggregatedMessage);
-            await orderMsgCollection.deleteMany({
-              store_id: message.store_id,
-              channel_id: message.channel_id,
-              ref_no: { $in: chunk },
-            });
+
+            await orderMsgCollection.updateOne(
+              {
+                store_id: message.store_id,
+                channel_id: message.channel_id,
+              },
+              {
+                $pull: {
+                  ref_nos: { $in: chunk },
+                },
+              }
+            );
+
             logger.info(
               `Published message to RMQ, store_id: ${message.store_id}, channel_id: ${message.channel_id}, ref_nos count: ${chunk.length}`
             );

@@ -5,11 +5,13 @@ const config = {
 
   SERVICE_NAME: process.env.SERVICE_NAME || "order-message-aggregator",
 
-  ORDER_MESSAGE_MONGO_URI:
-    process.env.ORDER_MESSAGE_MONGO_URI ||
+  ORDER_QUEUE_MONGO_DB_URI:
+    process.env.ORDER_QUEUE_MONGO_DB_URI ||
     "mongodb://admin:admin123@localhost:27017/",
-  ORDER_MESSAGE_MONGO_DB_NAME:
-    process.env.ORDER_MESSAGE_MONGO_DB_NAME || "messages",
+  ORDER_QUEUE_MONGO_DB_NAME:
+    process.env.ORDER_QUEUE_MONGO_DB_NAME || "messages",
+  ORDER_QUEUE_COLLECTION_NAME:
+    process.env.ORDER_QUEUE_COLLECTION_NAME || "order_messages",
 
   RMQ_HOST: process.env.RMQ_HOST,
   RMQ_HOST_CLUSTER: process.env.RMQ_HOST_CLUSTER || process.env.RMQ_HOST,
