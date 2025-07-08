@@ -4,6 +4,12 @@ const config = {
   NODE_ENV: process.env.NODE_ENV,
 
   SERVICE_NAME: process.env.SERVICE_NAME || "order-message-aggregator",
+  PROCESSING_INTERVAL: process.env.PROCESSING_INTERVAL
+    ? parseInt(process.env.PROCESSING_INTERVAL, 10)
+    : 1000 * 3,
+  MIN_MESSAGE_AGE_MS: process.env.MIN_MESSAGE_AGE_MS
+    ? parseInt(process.env.MIN_MESSAGE_AGE_MS, 10)
+    : 1000 * 5,
 
   ORDER_QUEUE_MONGO_DB_URI:
     process.env.ORDER_QUEUE_MONGO_DB_URI ||
@@ -39,12 +45,6 @@ const config = {
     process.env.ENABLE_APM === undefined
       ? false
       : JSON.parse(process.env.ENABLE_APM),
-
-  // Processing Configuration
-  PROCESSING_INTERVAL: process.env.PROCESSING_INTERVAL || "*/3 * * * * *", // Every 3 seconds
-  MAX_REF_NOS_PER_MESSAGE: parseInt(
-    process.env.MAX_REF_NOS_PER_MESSAGE || "10"
-  ),
 };
 
 let splitConnectionString: string[] = [];

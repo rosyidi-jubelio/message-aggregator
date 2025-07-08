@@ -1,7 +1,6 @@
 import { OrderMessage } from "@/types/message.types";
 import { Logger } from "@jubelio/service-base";
 import config from "@/config";
-import Promise from "bluebird";
 import { mongoClient } from "@/mongo-client";
 
 export const logger = Logger.createLogger(
@@ -19,63 +18,27 @@ export const processMessages = async () => {
   const db = client.db(config.ORDER_QUEUE_MONGO_DB_NAME);
   const orderMsgCollection = db.collection(config.ORDER_QUEUE_COLLECTION_NAME);
 
-  const messages: OrderMessage[] = await orderMsgCollection.find({}).toArray();
-
-  console.log(`got ${messages.length} stores of messages to process.`);
-
-  await Promise.map(
-    messages,
-    async (message) => {
-      const refNosChunks = chunkArray(
-        message.ref_nos,
-        config.MAX_REF_NOS_PER_MESSAGE
-      );
-
-      await Promise.map(
-        refNosChunks,
-        async (chunk) => {
-          try {
-            const aggregatedMessage = {
-              store_id: message.store_id,
-              channel_id: message.channel_id,
-              ref_nos: chunk,
-            };
-
-            // await publishToRMQ(aggregatedMessage);
-
-            await orderMsgCollection.updateOne(
-              {
-                store_id: message.store_id,
-                channel_id: message.channel_id,
-              },
-              {
-                $pull: {
-                  ref_nos: { $in: chunk },
-                },
-              }
-            );
-
-            logger.info(
-              `Published message to RMQ, store_id: ${message.store_id}, channel_id: ${message.channel_id}, ref_nos count: ${chunk.length}`
-            );
-          } catch (error) {
-            logger.error(
-              `Failed to process message for store_id: ${message.store_id}, channel_id: ${message.channel_id}, error: ${error}`
-            );
-            return;
-          }
-        },
-        { concurrency: 5 }
-      );
+  const result = await orderMsgCollection.findOneAndDelete({
+    created_at: {
+      $lt: new Date(Date.now() - config.MIN_MESSAGE_AGE_MS),
     },
-    { concurrency: 5 }
-  );
-};
+  });
 
-function chunkArray<T>(arr: T[], size: number): T[][] {
-  const chunks: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) {
-    chunks.push(arr.slice(i, i + size));
+  if (!result.value) {
+    logger.info("No messages to process");
+    return;
   }
-  return chunks;
-}
+
+  const message: OrderMessage = result.value;
+  try {
+    // await publishToRMQ(aggregatedMessage);
+    logger.info(
+      `Published message to RMQ, store_id: ${message.store_id}, channel_id: ${message.channel_id}, ref_nos count: ${message.ref_nos.length}`
+    );
+  } catch (error) {
+    logger.error(
+      `Failed to process message for store_id: ${message.store_id}, channel_id: ${message.channel_id}, error: ${error}`
+    );
+    return;
+  }
+};
