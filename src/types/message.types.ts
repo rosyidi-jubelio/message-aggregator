@@ -1,5 +1,7 @@
 export interface OrderMessage {
-  ref_nos: string[];
-  store_id: string;
-  channel_id: string;
+  tenantId: string;
+  companyId: number;
+  storeId: string;
+  channelId: number;
+  refNos: string[];
 }

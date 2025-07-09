@@ -2,6 +2,7 @@ import { OrderMessage } from "@/types/message.types";
 import { Logger } from "@jubelio/service-base";
 import config from "@/config";
 import { mongoClient } from "@/mongo-client";
+import { publishToRMQ } from "./rmq-client";
 
 export const logger = Logger.createLogger(
   config.SERVICE_NAME,
@@ -31,13 +32,13 @@ export const processMessages = async () => {
 
   const message: OrderMessage = result.value;
   try {
-    // await publishToRMQ(aggregatedMessage);
+    await publishToRMQ({ data: message });
     logger.info(
-      `Published message to RMQ, store_id: ${message.store_id}, channel_id: ${message.channel_id}, ref_nos count: ${message.ref_nos.length}`
+      `Published message to RMQ, storeId: ${message.storeId}, channelId: ${message.channelId}, refNos count: ${message.refNos.length}`
     );
   } catch (error) {
     logger.error(
-      `Failed to process message for store_id: ${message.store_id}, channel_id: ${message.channel_id}, error: ${error}`
+      `Failed to process message for storeId: ${message.storeId}, channelId: ${message.channelId}, error: ${error}`
     );
     return;
   }

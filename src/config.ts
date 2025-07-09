@@ -29,6 +29,9 @@ const config = {
   RMQ_USER: process.env.RMQ_USER,
   RMQ_PASSWORD: process.env.RMQ_PASSWORD || "",
   RMQ_VHOST: process.env.RMQ_VHOST || "",
+  IMPORT_BATCH_ORDERS_QUEUE:
+    process.env.IMPORT_BATCH_ORDERS_QUEUE || "import-batch-orders",
+
   ENABLE_LOG:
     process.env.ENABLE_LOG === undefined
       ? false
